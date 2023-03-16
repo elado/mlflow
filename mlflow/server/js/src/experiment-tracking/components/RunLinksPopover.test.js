@@ -60,7 +60,7 @@ describe('unit tests', () => {
 
     props.runItems.forEach(({ runId, name, color, y }, index) => {
       const link = links[index];
-      const hrefExpected = Routes.getRunPageRoute(props.experimentId, runId);
+      const hrefExpected = Routes.getRunPageRoute(runId);
       expect(link.getAttribute('href')).toBe(hrefExpected);
 
       const p = link.querySelector('p');

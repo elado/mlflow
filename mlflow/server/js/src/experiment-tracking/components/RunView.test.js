@@ -11,6 +11,16 @@ import { mockModelVersionDetailed } from '../../model-registry/test-utils';
 import { ModelVersionStatus, Stages } from '../../model-registry/constants';
 import { mountWithIntl } from '../../common/utils/TestUtils';
 
+const mockExperiment = Experiment.fromJs({
+  experiment_id: '12345',
+  name: 'my experiment',
+  artifact_location: 'dbfs:/databricks/abc',
+  lifecycle_stage: 'active',
+  last_update_time: 12345678999,
+  creation_time: 12345678900,
+  tags: [],
+});
+
 describe('RunView', () => {
   let minimalProps;
   let minimalStoreRaw;
@@ -25,7 +35,7 @@ describe('RunView', () => {
     );
     minimalProps = {
       runUuid: 'uuid-1234-5678-9012',
-      experimentId: '12345',
+      experiment: mockExperiment,
       getMetricPagePath: jest.fn(),
       handleSetRunTag: jest.fn(),
       setTagApi: jest.fn(),
@@ -51,15 +61,7 @@ describe('RunView', () => {
         },
         artifactsByRunUuid: { 'uuid-1234-5678-9012': new ArtifactNode(true) },
         experimentsById: {
-          12345: Experiment.fromJs({
-            experiment_id: '12345',
-            name: 'my experiment',
-            artifact_location: 'dbfs:/databricks/abc',
-            lifecycle_stage: 'active',
-            last_update_time: 12345678999,
-            creation_time: 12345678900,
-            tags: [],
-          }),
+          12345: mockExperiment,
         },
         modelVersionsByModel: {
           'Model A': {

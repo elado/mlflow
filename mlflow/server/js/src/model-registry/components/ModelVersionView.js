@@ -317,9 +317,7 @@ export class ModelVersionViewImpl extends React.Component {
       );
     } else if (runInfo) {
       return (
-        <Link to={Routers.getRunPageRoute(runInfo.getExperimentId(), runInfo.getRunUuid())}>
-          {this.resolveRunName()}
-        </Link>
+        <Link to={Routers.getRunPageRoute(runInfo.getRunUuid())}>{this.resolveRunName()}</Link>
       );
     }
     return null;

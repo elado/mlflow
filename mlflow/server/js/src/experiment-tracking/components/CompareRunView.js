@@ -529,9 +529,7 @@ export class CompareRunView extends Component {
                       overlayStyle={{ maxWidth: '400px' }}
                       mouseEnterDelay={1.0}
                     >
-                      <Link to={Routes.getRunPageRoute(r.getExperimentId(), r.getRunUuid())}>
-                        {r.getRunUuid()}
-                      </Link>
+                      <Link to={Routes.getRunPageRoute(r.getRunUuid())}>{r.getRunUuid()}</Link>
                     </Tooltip>
                   </th>
                 ))}

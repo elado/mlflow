@@ -15,7 +15,7 @@ export interface RunNameCellRendererProps extends ICellRendererParams {
 export const RunNameCellRenderer = React.memo(
   ({
     onExpand,
-    data: { runName, experimentId, runUuid, runDateAndNestInfo, color },
+    data: { runName, runUuid, runDateAndNestInfo, color },
   }: RunNameCellRendererProps) => {
     const { hasExpander, expanderOpen, childrenIds, level } = runDateAndNestInfo || {};
 
@@ -40,7 +40,7 @@ export const RunNameCellRenderer = React.memo(
             )}
           </div>
         </div>
-        <Link to={Routes.getRunPageRoute(experimentId, runUuid)} css={styles.runLink}>
+        <Link to={Routes.getRunPageRoute(runUuid)} css={styles.runLink}>
           {shouldDisplayRunColors && (
             <div
               css={styles.colorPill}

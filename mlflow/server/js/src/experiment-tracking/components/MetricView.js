@@ -52,7 +52,7 @@ export class MetricViewImpl extends Component {
     }
 
     if (runUuids.length === 1) {
-      return <Link to={Routes.getRunPageRoute(experimentIds[0], runUuids[0])}>{runNames[0]}</Link>;
+      return <Link to={Routes.getRunPageRoute(runUuids[0])}>{runNames[0]}</Link>;
     }
 
     const text = this.getCompareRunsPageText(runUuids.length, experimentIds.length);

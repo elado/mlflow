@@ -109,8 +109,14 @@ class App extends Component {
                 <Switch>
                   <Route exact path={Routes.rootRoute} component={HomePage} />
                   <Route exact path={Routes.experimentPageRoute} component={HomePage} />
+                  <Route
+                    exact
+                    path={Routes.directRunPageWithArtifactSelectedRoute}
+                    component={RunPage}
+                  />
                   <Route exact path={Routes.runPageWithArtifactSelectedRoute} component={RunPage} />
                   <Route exact path={Routes.runPageRoute} component={RunPage} />
+                  <Route exact path={Routes.directRunPageRoute} component={RunPage} />
                   <Route exact path={Routes.metricPageRoute} component={MetricPage} />
                   <Route exact path={Routes.compareRunPageRoute} component={CompareRunPage} />
                   <Route

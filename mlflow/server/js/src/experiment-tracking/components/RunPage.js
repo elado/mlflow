@@ -12,11 +12,14 @@ import { RunNotFoundView } from './RunNotFoundView';
 import { getUUID } from '../../common/utils/ActionUtils';
 import { Spinner } from '../../common/components/Spinner';
 import { PageContainer } from '../../common/components/PageContainer';
+import { getExperiment, getRunInfo } from '../reducers/Reducers';
+import { Experiment } from '../sdk/MlflowMessages';
 
 export class RunPageImpl extends Component {
   static propTypes = {
     runUuid: PropTypes.string.isRequired,
-    experimentId: PropTypes.string.isRequired,
+    experimentId: PropTypes.string,
+    experiment: PropTypes.instanceOf(Experiment),
     modelVersions: PropTypes.arrayOf(PropTypes.object),
     getRunApi: PropTypes.func.isRequired,
     getExperimentApi: PropTypes.func.isRequired,
@@ -26,17 +29,28 @@ export class RunPageImpl extends Component {
 
   getRunRequestId = getUUID();
 
-  getExperimentRequestId = getUUID();
-
   searchModelVersionsRequestId = getUUID();
-
   setTagRequestId = getUUID();
 
   componentDidMount() {
-    const { experimentId, runUuid } = this.props;
+    const { runUuid, experimentId, experiment } = this.props;
     this.props.getRunApi(runUuid, this.getRunRequestId);
-    this.props.getExperimentApi(experimentId, this.getExperimentRequestId);
     this.props.searchModelVersionsApi({ run_id: runUuid }, this.searchModelVersionsRequestId);
+
+    // If the experiment ID is already known (either from URL or from run payload), but
+    // it does not exist in store - fetch it
+    if (experimentId && !experiment) {
+      this.props.getExperimentApi(experimentId);
+    }
+  }
+
+  componentDidUpdate({ experimentId: prevExperimentId }) {
+    const { experimentId, experiment } = this.props;
+    // If the experiment ID has changed (e.g. it was extracted from run payload), but
+    // it does not exist in store - fetch it
+    if (prevExperimentId !== experimentId && !experiment) {
+      this.props.getExperimentApi(experimentId);
+    }
   }
 
   handleSetRunTag = (tagName, value) => {
@@ -62,7 +76,7 @@ export class RunPageImpl extends Component {
         getMetricPagePath={(key) =>
           Routes.getMetricPageRoute([this.props.runUuid], key, [this.props.experimentId])
         }
-        experimentId={this.props.experimentId}
+        experiment={this.props.experiment}
         modelVersions={this.props.modelVersions}
         handleSetRunTag={this.handleSetRunTag}
       />
@@ -70,7 +84,7 @@ export class RunPageImpl extends Component {
   };
 
   render() {
-    const requestIds = [this.getRunRequestId, this.getExperimentRequestId];
+    const requestIds = [this.getRunRequestId];
     return (
       <PageContainer>
         <RequestStateWrapper
@@ -86,15 +100,25 @@ export class RunPageImpl extends Component {
 
 const mapStateToProps = (state, ownProps) => {
   const { match } = ownProps;
-  const { runUuid, experimentId } = match.params;
+  const { runUuid } = match.params;
+
+  const runInfo = getRunInfo(runUuid, state);
+
+  // Get the experiment ID from the optional route param and if not available,
+  // wait for it to appear in the run payload
+  const experimentId = match.params.experimentId ?? runInfo?.experiment_id ?? undefined;
+
+  const experiment = experimentId ? getExperiment(experimentId, state) : null;
+
   const { modelVersionsByRunUuid } = state.entities;
   const modelVersions = modelVersionsByRunUuid ? modelVersionsByRunUuid[runUuid] : null;
   return {
     runUuid,
     experimentId,
+    experiment,
     modelVersions,
     // so that we re-render the component when the route changes
-    key: runUuid + experimentId,
+    key: runUuid,
   };
 };
 

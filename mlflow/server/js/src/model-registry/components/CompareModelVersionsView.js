@@ -310,9 +310,7 @@ export class CompareModelVersionsViewImpl extends Component {
             <th scope='column' className='data-value block-content' key={r.getRunUuid()}>
               {/* Do not show links for invalid run IDs */}
               {runInfosValid[idx] ? (
-                <Link to={Routes.getRunPageRoute(r.getExperimentId(), r.getRunUuid())}>
-                  {r.getRunUuid()}
-                </Link>
+                <Link to={Routes.getRunPageRoute(r.getRunUuid())}>{r.getRunUuid()}</Link>
               ) : (
                 r.getRunUuid()
               )}

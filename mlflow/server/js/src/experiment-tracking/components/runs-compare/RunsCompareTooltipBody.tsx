@@ -10,7 +10,6 @@ import { Theme } from '@emotion/react';
 import { FormattedMessage } from 'react-intl';
 import { Link } from 'react-router-dom';
 import Routes from '../../routes';
-import { useExperimentIds } from '../experiment-page/hooks/useExperimentIds';
 import { CompareChartRunData, truncateString } from './charts/CompareRunsCharts.common';
 import { CompareRunsTooltipBodyProps } from './hooks/useCompareRunsTooltip';
 import {
@@ -273,7 +272,6 @@ export const RunsCompareTooltipBody = ({
   CompareChartContextMenuHoverDataType
 >) => {
   const { runs, onTogglePin, onHideRun } = contextData;
-  const [experimentId] = useExperimentIds();
   const activeRun = runs?.find((run) => run.runInfo.run_uuid === runUuid);
 
   if (!activeRun) {
@@ -286,7 +284,7 @@ export const RunsCompareTooltipBody = ({
         <div css={styles.header}>
           <div css={styles.colorPill} style={{ backgroundColor: activeRun.color }} />
           <Link
-            to={Routes.getRunPageRoute(experimentId, runUuid)}
+            to={Routes.getRunPageRoute(runUuid)}
             target='_blank'
             css={styles.runLink}
             onClick={closeContextMenu}

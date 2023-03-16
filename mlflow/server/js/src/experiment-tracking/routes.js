@@ -24,14 +24,18 @@ class Routes {
 
   static experimentPageSearchRoute = '/experiments/:experimentId/:searchString';
 
-  static getRunPageRoute(experimentId, runUuid) {
-    return `/experiments/${experimentId}/runs/${runUuid}`;
+  static getRunPageRoute(runUuid) {
+    return `/runs/${runUuid}`;
   }
 
   static runPageRoute = '/experiments/:experimentId/runs/:runUuid';
+  static directRunPageRoute = '/runs/:runUuid';
 
   static runPageWithArtifactSelectedRoute =
     '/experiments/:experimentId/runs/:runUuid/artifactPath/:initialSelectedArtifactPath*';
+
+  static directRunPageWithArtifactSelectedRoute =
+    '/runs/:runUuid/artifactPath/:initialSelectedArtifactPath*';
 
   /**
    * Get route to the metric plot page

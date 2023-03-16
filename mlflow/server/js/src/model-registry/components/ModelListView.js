@@ -11,6 +11,7 @@ import {
   StageTagComponents,
   EMPTY_CELL_PLACEHOLDER,
   REGISTERED_MODELS_PER_PAGE,
+  REGISTERED_MODELS_PER_PAGE_COMPACT,
   REGISTERED_MODELS_SEARCH_NAME_FIELD,
   REGISTERED_MODELS_SEARCH_TIMESTAMP_FIELD,
 } from '../constants';
@@ -58,10 +59,15 @@ const getLatestVersionNumberByStage = (latest_versions, stage) => {
 export class ModelListViewImpl extends React.Component {
   constructor(props) {
     super(props);
+
+    const maxResultsSelection = shouldUseUnifiedListPattern()
+      ? REGISTERED_MODELS_PER_PAGE_COMPACT
+      : REGISTERED_MODELS_PER_PAGE;
+
     this.state = {
       loading: false,
       lastNavigationActionWasClickPrev: false,
-      maxResultsSelection: REGISTERED_MODELS_PER_PAGE,
+      maxResultsSelection,
       showOnboardingHelper: this.showOnboardingHelper(),
     };
   }
@@ -307,7 +313,12 @@ export class ModelListViewImpl extends React.Component {
 
     return this.state.showOnboardingHelper ? (
       <div>
-        <Alert message={content} type='info' onClose={() => this.disableOnboardingHelper()} />
+        <Alert
+          data-testid='showOnboardingHelper'
+          message={content}
+          type='info'
+          onClose={() => this.disableOnboardingHelper()}
+        />
         <DuBoisSpacer />
       </div>
     ) : null;
@@ -424,8 +435,9 @@ export class ModelListViewImpl extends React.Component {
         onClickNext={this.handleClickNext}
         onClickPrev={this.handleClickPrev}
         handleSetMaxResult={this.handleSetMaxResult}
-        maxResultOptions={[String(REGISTERED_MODELS_PER_PAGE), '25', '50', '100']}
+        maxResultOptions={['10', '25', '50', '100']}
         getSelectedPerPageSelection={this.props.getMaxResultValue}
+        removeBottomSpacing={isUnifiedListPattern}
       />
     );
 
@@ -547,7 +559,7 @@ export class ModelListViewImpl extends React.Component {
                 onClickNext={this.handleClickNext}
                 onClickPrev={this.handleClickPrev}
                 handleSetMaxResult={this.handleSetMaxResult}
-                maxResultOptions={[String(REGISTERED_MODELS_PER_PAGE), '25', '50', '100']}
+                maxResultOptions={['10', '25', '50', '100']}
                 getSelectedPerPageSelection={this.props.getMaxResultValue}
               />
             </div>

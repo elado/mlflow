@@ -1,7 +1,7 @@
 import React, { Component, createRef } from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl } from 'react-intl';
-import { getExperiment, getParams, getRunInfo, getRunTags } from '../reducers/Reducers';
+import { getParams, getRunInfo, getRunTags } from '../reducers/Reducers';
 import { connect } from 'react-redux';
 import './RunView.css';
 import { HtmlTableView } from './HtmlTableView';
@@ -15,19 +15,18 @@ import { capitalizeFirstLetter } from '../../common/utils/StringUtils';
 import { NOTE_CONTENT_TAG, NoteInfo } from '../utils/NoteUtils';
 import { RenameRunModal } from './modals/RenameRunModal';
 import { EditableTagsTableView } from '../../common/components/EditableTagsTableView';
-import { Button, withNotifications } from '@databricks/design-system';
+import { Button, Skeleton, withNotifications } from '@databricks/design-system';
 import { CollapsibleSection } from '../../common/components/CollapsibleSection';
 import { EditableNote } from '../../common/components/EditableNote';
 import { setTagApi, deleteTagApi } from '../actions';
-import { PageHeader, OverflowMenu } from '../../shared/building_blocks/PageHeader';
 import { Descriptions } from '../../common/components/Descriptions';
+import { RunViewHeader } from './run-view/RunViewHeader';
 
 export class RunViewImpl extends Component {
   static propTypes = {
     runUuid: PropTypes.string.isRequired,
     run: PropTypes.object.isRequired,
-    experiment: PropTypes.instanceOf(Experiment).isRequired,
-    experimentId: PropTypes.string.isRequired,
+    experiment: PropTypes.instanceOf(Experiment),
     comparedExperimentIds: PropTypes.arrayOf(PropTypes.string),
     hasComparedExperimentsBefore: PropTypes.bool,
     params: PropTypes.object.isRequired,
@@ -205,42 +204,17 @@ export class RunViewImpl extends Component {
     );
   }
 
-  getExperimentPageLink() {
-    return this.props.hasComparedExperimentsBefore ? (
-      <Link to={Routes.getCompareExperimentsPageRoute(this.props.comparedExperimentIds)}>
-        <FormattedMessage
-          defaultMessage='Displaying Runs from {numExperiments} Experiments'
-          // eslint-disable-next-line max-len
-          description='Breadcrumb nav item to link to the compare-experiments page on compare runs page'
-          values={{
-            numExperiments: this.props.comparedExperimentIds.length,
-          }}
-        />
-      </Link>
-    ) : (
-      <Link
-        to={Routes.getExperimentPageRoute(this.props.experiment.experiment_id)}
-        data-test-id='experiment-runs-link'
-      >
-        {this.props.experiment.getName()}
-      </Link>
-    );
-  }
-
-  renderUserIdLink = () => {
-    const { run, tags, experimentId } = this.props;
-    // TODO: On Databricks, just return `user` instead of a link because MLflow backend on
-    // Databricks does not support searching runs by user.
+  renderUserIdLink = (run, tags, experiment) => {
     const user = Utils.getUser(run, tags);
-    return <Link to={Routes.searchRunsByUser(experimentId, user)}>{user}</Link>;
+    return <Link to={Routes.searchRunsByUser(experiment.experiment_id, user)}>{user}</Link>;
   };
 
-  renderLifecycleLink = () => {
+  renderLifecycleLink = (experiment) => {
     const lifecycleStage = this.props.run.getLifecycleStage();
     return (
       <Link
         to={Routes.searchRunsByLifecycleStage(
-          this.props.experimentId,
+          experiment.experiment_id,
           capitalizeFirstLetter(lifecycleStage),
         )}
       >
@@ -253,11 +227,13 @@ export class RunViewImpl extends Component {
     const {
       runUuid,
       run,
+      experiment,
       params,
       tags,
       latestMetrics,
       getMetricPagePath,
       modelVersions,
+      runDisplayName,
       notificationContextHolder,
     } = this.props;
     const { showNoteEditor, isTagsRequestPending } = this.state;
@@ -269,7 +245,6 @@ export class RunViewImpl extends Component {
     const queryParams = window.location && window.location.search ? window.location.search : '';
     const runCommand = this.getRunCommand();
     const noteContent = noteInfo && noteInfo.content;
-    const breadcrumbs = [this.getExperimentPageLink()];
     const plotTitle = this.props.intl.formatMessage({
       defaultMessage: 'Plot chart',
       description: 'Link to the view the plot chart for the experiment run',
@@ -277,25 +252,12 @@ export class RunViewImpl extends Component {
 
     return (
       <div className='RunView'>
-        <PageHeader
-          title={<span data-test-id='runs-header'>{this.props.runDisplayName}</span>}
-          breadcrumbs={breadcrumbs}
-        >
-          <OverflowMenu
-            menu={[
-              {
-                id: 'overflow-rename-button',
-                onClick: this.handleRenameRunClick,
-                itemName: (
-                  <FormattedMessage
-                    defaultMessage='Rename'
-                    description='Menu item to rename an experiment run'
-                  />
-                ),
-              },
-            ]}
-          />
-        </PageHeader>
+        <RunViewHeader
+          experiment={experiment}
+          onRenameRun={this.handleRenameRunClick}
+          runDisplayName={runDisplayName}
+        />
+
         <div className='header-container'>
           <RenameRunModal
             runUuid={runUuid}
@@ -360,7 +322,7 @@ export class RunViewImpl extends Component {
               description: 'Label for displaying the user who created the experiment run',
             })}
           >
-            {this.renderUserIdLink()}
+            {this.renderUserIdLink(run, tags, experiment)}
           </Descriptions.Item>
           {duration ? (
             <Descriptions.Item
@@ -391,10 +353,10 @@ export class RunViewImpl extends Component {
                   'Label for displaying lifecycle stage of the experiment run to see if its active or deleted',
               })}
             >
-              {this.renderLifecycleLink()}
+              {this.renderLifecycleLink(experiment)}
             </Descriptions.Item>
           ) : null}
-          {tags['mlflow.parentRunId'] !== undefined ? (
+          {tags['mlflow.parentRunId'] && (
             <Descriptions.Item
               label={this.props.intl.formatMessage({
                 defaultMessage: 'Parent Run',
@@ -402,16 +364,11 @@ export class RunViewImpl extends Component {
                   'Label for displaying a link to the parent experiment run if any present',
               })}
             >
-              <Link
-                to={Routes.getRunPageRoute(
-                  this.props.experimentId,
-                  tags['mlflow.parentRunId'].value,
-                )}
-              >
+              <Link to={Routes.getRunPageRoute(tags['mlflow.parentRunId'].value)}>
                 {tags['mlflow.parentRunId'].value}
               </Link>
             </Descriptions.Item>
-          ) : null}
+          )}
           {tags['mlflow.databricks.runURL'] !== undefined ? (
             <Descriptions.Item
               label={this.props.intl.formatMessage({
@@ -545,31 +502,36 @@ export class RunViewImpl extends Component {
             onChange={this.handleCollapseChange('metrics')}
             data-test-id='run-metrics-section'
           >
-            <HtmlTableView
-              testId='metrics-table'
-              columns={[
-                {
-                  title: this.props.intl.formatMessage({
-                    defaultMessage: 'Name',
-                    description:
-                      // eslint-disable-next-line max-len
-                      'Column title for name column for displaying the metrics name for the experiment run',
-                  }),
-                  dataIndex: 'name',
-                },
-                {
-                  title: this.props.intl.formatMessage({
-                    defaultMessage: 'Value',
-                    description:
-                      // eslint-disable-next-line max-len
-                      'Column title for value column for displaying the value of the metrics for the experiment run ',
-                  }),
-                  dataIndex: 'value',
-                },
-              ]}
-              values={getMetricValues(latestMetrics, getMetricPagePath, plotTitle)}
-            />
+            {experiment ? (
+              <HtmlTableView
+                testId='metrics-table'
+                columns={[
+                  {
+                    title: this.props.intl.formatMessage({
+                      defaultMessage: 'Name',
+                      description:
+                        // eslint-disable-next-line max-len
+                        'Column title for name column for displaying the metrics name for the experiment run',
+                    }),
+                    dataIndex: 'name',
+                  },
+                  {
+                    title: this.props.intl.formatMessage({
+                      defaultMessage: 'Value',
+                      description:
+                        // eslint-disable-next-line max-len
+                        'Column title for value column for displaying the value of the metrics for the experiment run ',
+                    }),
+                    dataIndex: 'value',
+                  },
+                ]}
+                values={getMetricValues(latestMetrics, getMetricPagePath, plotTitle)}
+              />
+            ) : (
+              <Skeleton active />
+            )}
           </CollapsibleSection>
+
           <div data-test-id='tags-section'>
             <CollapsibleSection
               title={this.renderSectionTitle(
@@ -624,9 +586,8 @@ export class RunViewImpl extends Component {
 
 const mapStateToProps = (state, ownProps) => {
   const { comparedExperimentIds, hasComparedExperimentsBefore } = state.compareExperiments;
-  const { runUuid, experimentId } = ownProps;
+  const { runUuid } = ownProps;
   const run = getRunInfo(runUuid, state);
-  const experiment = getExperiment(experimentId, state);
   const params = getParams(runUuid, state);
   const tags = getRunTags(runUuid, state);
   const latestMetrics = getLatestMetrics(runUuid, state);
@@ -634,7 +595,6 @@ const mapStateToProps = (state, ownProps) => {
   const runName = Utils.getRunName(run, runUuid);
   return {
     run,
-    experiment,
     params,
     tags,
     latestMetrics,

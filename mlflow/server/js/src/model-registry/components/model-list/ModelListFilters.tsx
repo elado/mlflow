@@ -83,7 +83,7 @@ export const ModelListFilters = ({
     <TableFilterLayout>
       <TableFilterInput
         placeholder={intl.formatMessage({
-          defaultMessage: 'Filter models',
+          defaultMessage: 'Filter registered models by name or tags',
           description: 'Placeholder text inside model search bar',
         })}
         onSubmit={triggerSearch}
@@ -95,10 +95,10 @@ export const ModelListFilters = ({
         showSearchButton
       />
       {isFiltered && (
-        <Button type='link' onClick={reset} data-testid='models-list-filters-reset'>
+        <Button type='tertiary' onClick={reset} data-testid='models-list-filters-reset'>
           <FormattedMessage
             defaultMessage='Reset filters'
-            description='Models table > filters > reset filters button'
+            description='Reset filters button in list'
           />
         </Button>
       )}

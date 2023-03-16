@@ -241,7 +241,7 @@ describe('ExperimentViewRunsTable', () => {
       }),
     });
 
-    // Assert "add params/metrics" CTA button not being displayed anymore
+    // Assert "show more columns" CTA button not being displayed anymore
     expect(simpleExperimentsWrapper.find('ExperimentViewRunsTableAddColumnCTA').length).toBe(0);
   });
 });

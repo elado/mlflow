@@ -167,7 +167,7 @@ describe('ModelVersionView', () => {
     const runId = 'somerunid';
     const experimentId = 'experiment_id';
     const runInfo = mockRunInfo(runId, experimentId);
-    const expectedRunLink = Routers.getRunPageRoute(experimentId, runId);
+    const expectedRunLink = Routers.getRunPageRoute(runId);
     const expectedRunDisplayName = Utils.getRunDisplayName({}, runId);
     const props = {
       ...minimalProps,

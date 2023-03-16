@@ -12,10 +12,18 @@ import { ModelVersionStatus, Stages } from '../../model-registry/constants';
 import { ErrorWrapper } from '../../common/utils/ErrorWrapper';
 import { ErrorCodes } from '../../common/constants';
 import { RunNotFoundView } from './RunNotFoundView';
+import { getExperimentApi, getRunApi } from '../actions';
+import { cloneDeep } from 'lodash';
+
+jest.mock('../actions', () => ({
+  getRunApi: jest.fn().mockReturnValue({ type: 'getRunApi', payload: {} }),
+  getExperimentApi: jest.fn().mockReturnValue({ type: 'getExperimentApi', payload: {} }),
+}));
 
 describe('RunPage', () => {
   let wrapper;
   let minimalProps;
+  let mockedState;
   let minimalStore;
   const mockStore = configureStore([thunk, promiseMiddleware()]);
 
@@ -24,6 +32,7 @@ describe('RunPage', () => {
     global.fetch = jest.fn(() =>
       Promise.resolve({ ok: true, status: 200, text: () => Promise.resolve('') }),
     );
+    jest.clearAllMocks();
     const modelVersion = mockModelVersionDetailed(
       'Model A',
       1,
@@ -47,7 +56,7 @@ describe('RunPage', () => {
       searchModelVersionsApi: jest.fn(() => Promise.resolve({})),
       setTagApi: jest.fn(() => Promise.resolve({})),
     };
-    minimalStore = mockStore({
+    mockedState = {
       entities: {
         runInfosByUuid: {
           'uuid-1234-5678-9012': {
@@ -81,7 +90,8 @@ describe('RunPage', () => {
         tagsByRunUuid: { 'uuid-1234-5678-9012': {} },
       },
       apis: {},
-    });
+    };
+    minimalStore = mockStore(mockedState);
   });
 
   test('should render with minimal props and store without exploding', () => {
@@ -116,5 +126,61 @@ describe('RunPage', () => {
     expect(runPageInstance.renderRunView(false, true, [getRunErrorRequest]).type).toBe(
       RunNotFoundView,
     );
+  });
+
+  test('should fetch the experiment if it does not exist in the store but the ID is provided by match param', () => {
+    wrapper = mount(
+      <Provider
+        store={mockStore({ ...mockedState, entities: { runInfosByUuid: {}, experimentsById: {} } })}
+      >
+        <BrowserRouter>
+          <RunPage {...minimalProps} />
+        </BrowserRouter>
+      </Provider>,
+    ).find(RunPage);
+
+    expect(getRunApi).toBeCalledWith('uuid-1234-5678-9012', expect.anything());
+    expect(getExperimentApi).toBeCalledWith('12345');
+  });
+
+  test('should fetch the experiment if it does not exist in the store but the ID is provided by run payload', () => {
+    const runInfoInState = mockedState.entities.runInfosByUuid['uuid-1234-5678-9012'];
+
+    const props = cloneDeep(minimalProps);
+    props.match.params.experimentId = undefined;
+
+    wrapper = mount(
+      <Provider
+        store={mockStore({
+          ...mockedState,
+          entities: {
+            runInfosByUuid: {
+              'uuid-1234-5678-9012': { ...runInfoInState, experiment_id: 'other_experiment_id' },
+            },
+            experimentsById: {},
+          },
+        })}
+      >
+        <BrowserRouter>
+          <RunPage {...props} />
+        </BrowserRouter>
+      </Provider>,
+    ).find(RunPage);
+
+    expect(getRunApi).toBeCalledWith('uuid-1234-5678-9012', expect.anything());
+    expect(getExperimentApi).toBeCalledWith('other_experiment_id');
+  });
+
+  test('should not fetch the experiment if it does exist in the store already', () => {
+    wrapper = mount(
+      <Provider store={minimalStore}>
+        <BrowserRouter>
+          <RunPage {...minimalProps} />
+        </BrowserRouter>
+      </Provider>,
+    ).find(RunPage);
+
+    expect(getRunApi).toBeCalledWith('uuid-1234-5678-9012', expect.anything());
+    expect(getExperimentApi).not.toBeCalled();
   });
 });

@@ -14,7 +14,7 @@ export interface ModelsCellRendererProps {
 }
 
 export const ModelsCellRenderer = React.memo((props: ModelsCellRendererProps) => {
-  const { registeredModels, loggedModels, experimentId, runUuid } = props.value;
+  const { registeredModels, loggedModels, runUuid } = props.value;
   const models = Utils.mergeLoggedAndRegisteredModels(loggedModels, registeredModels);
 
   if (models && models.length) {
@@ -46,9 +46,7 @@ export const ModelsCellRenderer = React.memo((props: ModelsCellRendererProps) =>
     } else if (modelToRender.flavors) {
       const loggedModelFlavorText = modelToRender.flavors ? modelToRender.flavors[0] : 'Model';
       const loggedModelLink = Utils.getIframeCorrectedRoute(
-        `${Routes.getRunPageRoute(experimentId, runUuid)}/artifactPath/${
-          modelToRender.artifactPath
-        }`,
+        `${Routes.getRunPageRoute(runUuid)}/artifactPath/${modelToRender.artifactPath}`,
       );
       modelDiv = (
         <>
