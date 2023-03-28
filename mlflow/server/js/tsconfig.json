@@ -17,7 +17,6 @@
     "outDir": "dist",
     "jsx": "react-jsx",
     "allowJs": true,
-    "suppressImplicitAnyIndexErrors": false,
     "esModuleInterop": true,
     "strict": true,
     "noPropertyAccessFromIndexSignature": true,

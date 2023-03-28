@@ -1,3 +1,4 @@
+
 module.exports = {
   extends: ['airbnb-base', 'react-app', 'prettier'],
   plugins: ['prettier', 'react', 'no-only-tests'],
