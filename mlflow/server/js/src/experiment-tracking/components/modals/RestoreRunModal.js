@@ -25,7 +25,10 @@ export class RestoreRunModalImpl extends Component {
       restorePromises.push(this.props.restoreRunApi(runId));
     });
     return Promise.all(restorePromises).catch((e) => {
-      const errorMessage = 'While restoring an experiment run, an error occurred.';
+      let errorMessage = 'While restoring an experiment run, an error occurred.';
+      if (e.textJson && e.textJson.error_code === 'RESOURCE_LIMIT_EXCEEDED') {
+        errorMessage = errorMessage + ' ' + e.textJson.message;
+      }
       this.props.openErrorModal(errorMessage);
     });
   }
