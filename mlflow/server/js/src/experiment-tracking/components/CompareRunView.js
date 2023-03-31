@@ -3,15 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import {
-  Alert,
-  Button,
-  Spacer,
-  Switch,
-  Tabs,
-  Tooltip,
-  Typography,
-} from '@databricks/design-system';
+import { Alert, Button, Spacer, Switch, Tabs, Tooltip } from '@databricks/design-system';
 
 import { getExperiment, getParams, getRunInfo, getRunTags } from '../reducers/Reducers';
 import './CompareRunView.css';
@@ -432,6 +424,28 @@ export class CompareRunView extends Component {
     const title = this.getTitle();
     /* eslint-disable-next-line prefer-const */
     let breadcrumbs = [this.getExperimentLink()];
+
+    const paramsLabel = this.props.intl.formatMessage({
+      defaultMessage: 'Parameters',
+      description: 'Row group title for parameters of runs on the experiment compare runs page',
+    });
+
+    const metricsLabel = this.props.intl.formatMessage({
+      defaultMessage: 'Metrics',
+      description: 'Row group title for metrics of runs on the experiment compare runs page',
+    });
+
+    const tagsLabel = this.props.intl.formatMessage({
+      defaultMessage: 'Tags',
+      description: 'Row group title for tags of runs on the experiment compare runs page',
+    });
+    const diffOnlyLabel = this.props.intl.formatMessage({
+      defaultMessage: 'Show diff only',
+      description:
+        // eslint-disable-next-line max-len
+        'Label next to the switch that controls displaying only differing values in comparision tables on the compare runs page',
+    });
+
     return (
       <div className='CompareRunView' ref={this.compareRunViewRef}>
         <PageHeader title={title} breadcrumbs={breadcrumbs} />
@@ -579,64 +593,33 @@ export class CompareRunView extends Component {
             </tbody>
           </table>
         </CollapsibleSection>
-        <CollapsibleSection
-          title={this.props.intl.formatMessage({
-            defaultMessage: 'Parameters',
-            description:
-              'Row group title for parameters of runs on the experiment compare runs page',
-          })}
-        >
+        <CollapsibleSection title={paramsLabel}>
           <Switch
+            label={diffOnlyLabel}
+            aria-label={[paramsLabel, diffOnlyLabel].join(' - ')}
             checked={this.state.onlyShowParamDiff}
             onChange={(checked, e) => this.setState({ onlyShowParamDiff: checked })}
           />
-          <Typography.Text hint color='secondary'>
-            <FormattedMessage
-              defaultMessage='Show diff only'
-              // eslint-disable-next-line max-len
-              description='Label next to the switch that controls displaying only differing values in comparision tables on the compare runs page'
-            />
-          </Typography.Text>
           <Spacer size='lg' />
           {this.renderParamTable(colWidth)}
         </CollapsibleSection>
-        <CollapsibleSection
-          title={this.props.intl.formatMessage({
-            defaultMessage: 'Metrics',
-            description: 'Row group title for metrics of runs on the experiment compare runs page',
-          })}
-        >
+        <CollapsibleSection title={metricsLabel}>
           <Switch
+            label={diffOnlyLabel}
+            aria-label={[metricsLabel, diffOnlyLabel].join(' - ')}
             checked={this.state.onlyShowMetricDiff}
             onChange={(checked, e) => this.setState({ onlyShowMetricDiff: checked })}
           />
-          <Typography.Text hint color='secondary'>
-            <FormattedMessage
-              defaultMessage='Show diff only'
-              // eslint-disable-next-line max-len
-              description='Label next to the switch that controls displaying only differing values in comparision tables on the compare runs page'
-            />
-          </Typography.Text>
           <Spacer size='lg' />
           {this.renderMetricTable(colWidth, experimentIds)}
         </CollapsibleSection>
-        <CollapsibleSection
-          title={this.props.intl.formatMessage({
-            defaultMessage: 'Tags',
-            description: 'Row group title for tags of runs on the experiment compare runs page',
-          })}
-        >
+        <CollapsibleSection title={tagsLabel}>
           <Switch
+            label={diffOnlyLabel}
+            aria-label={[tagsLabel, diffOnlyLabel].join(' - ')}
             checked={this.state.onlyShowTagDiff}
             onChange={(checked, e) => this.setState({ onlyShowTagDiff: checked })}
           />
-          <Typography.Text hint color='secondary'>
-            <FormattedMessage
-              defaultMessage='Show diff only'
-              // eslint-disable-next-line max-len
-              description='Label next to the switch that controls displaying only differing values in comparision tables on the compare runs page'
-            />
-          </Typography.Text>
           <Spacer size='lg' />
           {this.renderTagTable(colWidth)}
         </CollapsibleSection>

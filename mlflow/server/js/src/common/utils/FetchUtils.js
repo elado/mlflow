@@ -119,14 +119,17 @@ export const fetchEndpointRaw = ({
   if (timeoutMs) {
     setTimeout(() => abortController.abort(), timeoutMs);
   }
-  return fetch(url, {
+
+  const fetchOptions = {
     method,
     headers,
     ...(body && { body }),
     ...defaultOptions,
     ...options,
     ...(timeoutMs && { signal: abortController.signal }),
-  });
+  };
+
+  return fetch(url, fetchOptions);
 };
 
 /**
@@ -283,10 +286,10 @@ export const getJson = (props) => {
 export const postJson = (props) => {
   const { data } = props;
   return fetchEndpoint({
-    ...props,
     method: HTTPMethods.POST,
     body: generateJsonBody(data),
     success: defaultResponseParser,
+    ...props,
   });
 };
 
