@@ -41,7 +41,9 @@ export class ArtifactNode {
   }
 
   static findChild(node, path) {
-    const parts = path.split('/');
+    // Filter out empty strings caused by spurious instances of slash, i.e.
+    // "model/" instead of just "model"
+    const parts = path.split('/').filter((item) => item);
     let ret = node;
     parts.forEach((part) => {
       if (ret.children && ret.children[part] !== undefined) {

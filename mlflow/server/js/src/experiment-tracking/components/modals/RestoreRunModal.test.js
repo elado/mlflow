@@ -41,7 +41,11 @@ describe('RestoreRunModal', () => {
       () =>
         new Promise((resolve, reject) => {
           window.setTimeout(() => {
-            reject();
+            reject(
+              new Error('Limit exceeded', {
+                textJson: { error_code: 'RESOURCE_LIMIT_EXCEEDED', message: 'Limit exceeded' },
+              }),
+            );
           }, 1000);
         }),
     );

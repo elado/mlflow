@@ -348,7 +348,9 @@ export const artifactsByRunUuid = (state = {}, action) => {
         artifactNode.setChildren(files);
       } else {
         // Otherwise, traverse the queryPath to get to the appropriate artifact node.
-        const pathParts = queryPath.split('/');
+        // Filter out empty strings caused by spurious instances of slash, i.e.
+        // "model/" instead of just "model"
+        const pathParts = queryPath.split('/').filter((item) => item);
         let curArtifactNode = artifactNode;
         pathParts.forEach((part) => {
           curArtifactNode = curArtifactNode.children[part];
